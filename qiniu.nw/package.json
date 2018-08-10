@@ -1,0 +1,12 @@
+{
+    "name": "tmt_qiniu_upload",
+    "version": "0.0.1",
+    "main": "index.html",
+    "author": "hopekayo@gmail.com",
+    "window": {
+        "height": 600,
+        "width": 650,
+        "title": "tmt_qiniu_upload",
+        "toolbar": true
+  }
+}

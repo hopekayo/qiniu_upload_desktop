@@ -1,0 +1,19 @@
+{
+  "name": "tmt_qiniu_upload",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "fs-extra": "^7.0.0",
+    "hmac_sha1": "^0.1.0",
+    "nodewebkit": "^0.11.6",
+    "qiniu": "^7.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "hopekayo@gmail.com",
+  "license": "ISC"
+}

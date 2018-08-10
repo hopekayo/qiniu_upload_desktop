@@ -1,0 +1,288 @@
+<!-- by hopekayo@gmail.com -->
+<!DOCTYPE html>
+<html>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="bootstrap.min.css">
+<head>
+    <title>七牛文件上传</title>
+    <style type="text/css">
+        .display_none{
+            display: none;
+        }
+        .set {
+            position: fixed;
+            right: 10px;
+            top: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .home {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            align-items: center;
+        }
+        .jumbotron{
+            width: 100%;
+            text-align: center;
+        }
+        .results{
+            position: fixed;
+            bottom: 5%;
+            left: 0;
+            max-height: 165px;
+            width: 100vw;
+            overflow: scroll;
+        }
+        .results .list-group{
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="js_set set ">
+        <span class="glyphicon glyphicon-cog"></span>
+    </div>
+    <div class="container home">
+        <!-- Content here -->
+        <div class="jumbotron center-block">
+            <h1>
+                七牛文件上传
+            </h1>
+            <p>简单、直接、开源的七牛文件上传工具</p>
+          <div >
+                <a class="btn btn-primary btn-lg js_up" href="#" role="button">点击上传</a>
+                <input type="file" name="file" class="form-control hide" id="file" value="选择文件">
+          </div>
+          <div class="results">
+              <ul class="list-group">
+                  
+              </ul>
+          </div>
+        </div>
+    </div>
+    <div class="container profile display_none">
+        <div class="card text-center"">
+            <h1>
+                配置
+            </h1>
+        </div>
+
+        <form action="">
+              <div class="form-group">
+                <label for="exampleInputEmail1">AK(AccessKey)</label>
+                <input type="text"  class="form-control" id="ak" placeholder="请到七牛个人中心粘贴AccessKey">
+              </div>
+              <div class="form-group">
+                <label for="sk">SK(SecretKey)</label>
+                <input type="password" class="form-control" id="sk" placeholder="请到七牛个人中心SecretKey">
+              </div>
+              <div class="form-group">
+                <label for="exampleInputEmail1">存储空间名（bucket）</label>
+                <input type="text"  class="form-control" id="bucket" placeholder="存储空间名（bucket）">
+              </div>
+             <div class="form-group">
+                <label for="exampleInputEmail1">存储空间域名（domain）</label>
+                <input type="text"  class="form-control" id="domain" placeholder="存储空间名（bucket）">
+              </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-primary js_save disabled">保存</button>
+              </div>
+
+        </form>
+    </div>
+
+    
+    
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="jquery.min.js" ></script>
+    <script type="text/javascript">
+        var qiniu  = require("qiniu");
+        var fs     = require("fs-extra");
+        fs.readJson('./config.json').then(function(config) {
+            console.log(config);
+            if(config.accessKey && config.accessKey.length){
+                qiniu.conf.ACCESS_KEY = config.accessKey;
+                qiniu.conf.SECRET_KEY = config.secretKey;
+                $('#ak').val(config.accessKey);
+                $('#sk').val(config.secretKey);
+                $('#bucket').val(config.bucket);
+                $('#domain').val(config.domain);
+                upload(config.bucket,config.domain);
+            }else{
+                console.log("未设置");
+                setHandle();
+                $('.js_set').trigger('click');
+            }
+        }).catch(function(err){
+            console.error(err); 
+        });
+
+        console.log(/(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g.test('http://pcavwrcgm.bkt.clouddn.com'))
+
+        var getNowTime = function(){
+            var commonTime = new Date(),
+                year          = commonTime.getFullYear(),
+                month         = commonTime.getMonth() + 1,
+                day           = commonTime.getDate(),
+                hours         = commonTime.getHours(),
+                minutes       = commonTime.getMinutes(),
+                seconds       = commonTime.getSeconds(),
+                getMilliseconds = commonTime.getMilliseconds();
+
+            function format(t){
+                return ("0"+t) ;
+            }
+            function dformat(t){
+                if(t >= 100) return t;
+                if(t >= 10) return ("0"+t);
+                if(t < 10) return ("00"+t);
+            }
+            return year+format(month)+format(day)+format(hours)+format(minutes)+format(seconds)+dformat(getMilliseconds);
+        }
+
+
+        var setHandle = function(){
+            var $input = $('.profile input');
+            function check(){
+                let length = $input.length,
+                    reg    = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g,
+                    url    = $.trim($("#domain").val());
+                for(let item of $input){
+                    if(!$(item).val()){
+                        return false;
+                    }
+                }
+                // console.log(url,reg.test(url));
+                // console.log('http://'+url,reg.test('http://'+url));
+                if(!reg.test(url)){
+                    if(!reg.test('http://'+url)){
+                        return false;
+                    }else{
+                        $("#domain").val('http://'+url)
+                    }
+                }
+                return true;
+            }
+            if(check()){
+                $('.js_save').removeClass('disabled');
+            }
+            $input.bind('change',function(){
+                if(check()){
+                    $('.js_save').removeClass('disabled');
+                }else{
+                    $('.js_save').addClass('disabled');
+                }
+                if(!$(this).val()){
+                    $(this).parent('.form-group').addClass(' has-error');
+                }else{
+                    $(this).parent('.form-group').removeClass(' has-error');
+                }
+            });
+            $('.js_save').on('click',function(){
+                if($(this).hasClass('disabled')) return false;
+                var config = {
+                        accessKey : $('#ak').val(),
+                        secretKey : $('#sk').val(),
+                        bucket    : $('#bucket').val(),
+                        domain    : $('#domain').val()
+                }
+                fs.writeJsonSync('./config.json', config);
+                $('.js_set').trigger('click');
+                qiniu.conf.ACCESS_KEY = config.accessKey;
+                qiniu.conf.SECRET_KEY = config.secretKey;
+                var bucket = 'imagebed';
+                upload(config.bucket,config.domain);
+            })
+        };
+        var upload = function(bucket,domain) {
+            $("#file").unbind();
+            var mac = new qiniu.auth.digest.Mac(qiniu.conf.ACCESS_KEY, qiniu.conf.SECRET_KEY);
+            var config = new qiniu.conf.Config();
+            //config.zone = qiniu.zone.Zone_z0;
+            var formUploader = new qiniu.form_up.FormUploader(config);
+            $("#file").on('change',function(){
+                var file = $(this)[0].files[0];
+                    now  = new Date(),
+                    key  = getNowTime()+'.'+file.name.split('.')[file.name.split('.').length-1],//上传到七牛后保存的文件名前缀
+                    options = {
+                        scope: bucket+':'+key,
+                        isPrefixalScope: 1
+                    },
+                    putPolicy = new qiniu.rs.PutPolicy(options),
+                    uploadToken = putPolicy.uploadToken(mac),
+                    putExtra = new qiniu.form_up.PutExtra(),
+                    localFile = file.path;
+                console.log(file);
+                console.log(options,uploadToken);
+                formUploader.putFile(uploadToken, key, localFile, putExtra, function(respErr,
+                  respBody, respInfo) {
+                    if (respErr) {
+                        throw respErr;
+                    }
+                    if (respInfo.statusCode == 200) {
+                        console.log(respBody);
+                        $('.results ul').prepend('<li class="list-group-item list-group-item-success">'+domain+'/'+key+'</li>');
+                    } else {
+                        console.log(respInfo.statusCode);
+                        console.log(respBody);
+                        $('.results ul').prepend('<li class="list-group-item list-group-item-danger">'+respBody.error+'</li>');
+                    }
+                });
+            });
+        };
+
+        //上传绑定
+        $('.js_up').click(function(){
+            $('#file').trigger('click');
+        });
+
+        // 设置交互
+        $('.js_set').on('click',function(){
+            $('.container').toggle();
+            setHandle();
+        })    
+
+
+        // $(function(){
+        //     $('#action').on('change',function(){
+        //         $(this).parents('form').attr('action',$('#action').val());
+        //     })
+        //     $('#submit').click(function(e){
+        //         var $this = $(this);
+        //         $this.val('正在上传');
+        //         var data = {
+        //                 'bucket' : 't-edge-video',
+        //                 'url' :  $.trim($("#name").val()),
+        //             };
+        //         $.get('http://admin3.tmtpost.com/api/qiniu/get_uptoken',data,function(data){
+        //             $('#uptoken').val(data.uptoken);
+        //         },'json').done(function(){
+        //             $.ajax({
+        //                 url: $this.parents('form').attr('action'),
+        //                 type: 'POST',
+        //                 cache: false,
+        //                 data: new FormData($this.parents('form')[0]),
+        //                 processData: false,
+        //                 contentType: false
+        //             }).done(function(res) {
+        //                 // console.log(res);
+        //                 $this.val('上传');
+        //                 var domain = $('#bucket option:checked').attr('data-domain');
+        //                 $this.parents('form').append('<div class="form-group"><a href="'+domain+'/'+res.key+'" class="badge badge-secondary" target="_blank">'+domain+'/'+res.key+'</a></div>')
+        //             }).fail(function(res) {
+        //                 console.log(res);
+        //             });
+        //         });
+        //         return false;
+        //     });
+        // });
+    </script>
+</body>
+</html>
+
+
