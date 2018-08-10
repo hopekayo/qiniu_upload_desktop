@@ -1,19 +1,19 @@
 {
-  "name": "tmt_qiniu_upload",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "dependencies": {
-    "fs-extra": "^7.0.0",
-    "hmac_sha1": "^0.1.0",
-    "nodewebkit": "^0.11.6",
-    "qiniu": "^7.2.1"
-  },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "hopekayo@gmail.com",
-  "license": "ISC"
+    "name": "tmt_qiniu_upload",
+    "version": "0.0.1",
+    "main": "index.html",
+    "author": "hopekayo@gmail.com",
+    "dependencies": {
+        "fs-extra": "^7.0.0",
+        "hmac_sha1": "^0.1.0",
+        "nodewebkit": "^0.11.6",
+        "qiniu": "^7.2.1"
+    },
+    "window": {
+        "height": 600,
+        "width": 650,
+        "title": "tmt_qiniu_upload",
+        "toolbar": true
+    },
+    "license": "ISC"
 }
